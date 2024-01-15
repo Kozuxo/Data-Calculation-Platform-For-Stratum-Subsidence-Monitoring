@@ -1,0 +1,784 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Calculation Platform For Stratum Subsidence Monitoring</title>
+
+    <!-- Link Styles -->
+    <link rel="stylesheet" href="style.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  
+    <!-- Third Party Styles -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      body { margin: 0; padding: 0; }
+      #map { position: absolute; top: 0; bottom: 50px; width: 100%; }
+      #buttonsContainer { position: absolute; bottom: 92%; right: 1%; }
+      .buttonContainer {
+      display: inline-block; 
+      background-color: #f2f2f2; 
+      padding: 10px; 
+      margin-right: 10px; 
+      border-radius: 5px; 
+    }
+      .toggleButton { 
+        margin-right: 5px;
+      background-color: #f2f2f2; 
+      border: 1px solid #ccc; 
+      padding: 10px 20px; 
+      border-radius: 5px; 
+    
+    
+    }
+    .buttongroup {
+      display: flex; 
+      justify-content: center; 
+      background-color: rgba(242,242,242,0.7);
+      padding: 10px; 
+      border-radius: 5px; 
+    }
+    #draggable-icon {
+      width: 50px;
+      height: 50px;
+      background-color: #3498db;
+      color: #fff;
+      text-align: center;
+      line-height: 50px;
+      cursor: move;
+      position: absolute;
+      font-size: 45px;
+    }
+
+    #popup-container {
+      display: none;
+      position: absolute;
+      background-color: rgba(242,242,242,0.7);
+      padding: 10px; 
+      border-radius: 5px; 
+    }
+
+    .popup-button {
+        margin-right: 5px;
+      background-color: #e9e9e9; 
+      border: 1px solid #ccc; 
+      padding: 10px 20px; 
+      border-radius: 5px; 
+    }
+
+    .buttonCenti {
+      display: flex; 
+      justify-content: center; 
+      background-color: rgba(199,199,199,0.7);
+      padding: 10px; 
+      border-radius: 5px; 
+    }
+
+    .popup-button {
+      margin-right: 5px;
+      background-color: #e9e9e9;
+      border: 1px solid #ccc;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+    </style>
+
+    <!-- Map Screenshot -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+</head>
+<body>
+
+  
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo_details">
+          <div class="logo_name">Dashboard</div>
+          <i class="bx bx-menu" id="btn"></i>
+        </div>
+        <ul class="nav-list">
+          <li>
+            <a href="#">
+              <i class="bx bx-map"></i>
+              <span class="link_name">Yunlin</span>
+            </a>
+            <span class="tooltip">Yunlin</span>
+            <button class="button" id="button1">2019</button>
+            <button class="button" id="button2">2020</button>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bx bx-map"></i>
+              <span class="link_name">Chiayi</span>
+            </a>
+            <span class="tooltip">Chiayi</span>
+            <button class="button" id="button3">2019</button>
+            <button class="button" id="button4">2020</button>
+
+            <a href="#">
+              <i class="bx bx-map"></i>
+              <span class="link_name">MRT</span>
+            </a>
+            <button id="buttonNewGeoJSON">Load MRT Geojson</button>
+
+          </li>
+
+          
+          <li>
+            <a href="#">
+              <i class="bx bx-map"></i>
+              <span class="link_name">Compare</span>
+            </a>
+            <span class="tooltip">Chiayi</span>
+            <button class="button" id="button6">YL-2019</button>
+            <button class="button" id="button7">YL-2020</button>
+            <button class="button" id="button8">CY-2019</button>
+            <button class="button" id="button9">CY-2020</button>
+          </li>
+          <li>
+            <a href="#">
+              <i class="bx bx-map-alt"></i>
+              <span class="link_name">Map Styles</span>
+            </a>
+            <span class="tooltip">Map Styles</span>
+            <div id="menu">
+            <input id="satellite-streets-v12" type="button" name="button" value="satellite" checked="checked">
+            <input id="light-v11" type="button" name="button" value="light">
+            <input id="dark-v11" type="button" name="button" value="dark">
+            <input id="streets-v12" type="button" name="button" value="streets">
+            <input id="outdoors-v12" type="button" name="button" value="outdoors">
+            </div>
+          </li>
+
+
+          <li>
+            <a href="#">
+              <i class="bx bx-data"></i>
+              <span class="link_name">Upload DataSet</span>
+            </a>
+            <span class="tooltip">Upload DataSet</span>
+            <main>
+              <form id="uploadForm" enctype="multipart/form-data">
+              <input type="file" name="geojsonFile" id="geojsonFile" accept=".geojson"/>
+              <input type="submit" value="Upload">
+              </form>
+              <div id="status"></div>
+              <script src="upload.js"></script>
+              <button class="button" id="button5">Use</button>
+            </main>
+          </li>
+              <!-- print -->
+          <li>
+            <a href="#">
+              <i class="bx bx-printer"></i>
+              <span class="link_name">Print</span>
+            </a>
+            <span class="tooltip">Print</span>
+            <button id="captureButton">PNG</button>
+            <button id="captureButton2">PDF</button>
+          </li>
+
+
+      <li class="profile">
+        <div class="profile_details">
+          <img src="profile.jpg" alt="profile image">
+          <div class="profile_content">
+            <div class="name">Welcome! User</div>
+            <a href="login.php">Logout</a>
+          </div>
+        </div>
+        <i class="bx bx-log-out" id="log_out"></i>
+      </li>
+    </ul>
+  </div>
+
+   
+      <!-- Scripts -->
+      <script src="script.js"></script>
+
+    <!-- Header -->
+    <header class="p-3">
+        <div class="container">
+            <h3 class="text-light">Data Calculation Platform For Stratum Subsidence Monitoring</h3>
+        </div>
+    </header>
+
+    
+
+
+    <!-- Main -->
+<main>
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+    <div id="buttonsContainer">
+        <div class="buttongroup">
+            Sort by Centimeters:
+      <button class="toggleButton" data-description="1">0-1 cm</button>
+      <button class="toggleButton" data-description="2">0-2 cm</button>
+      <button class="toggleButton" data-description="3">0-3 cm</button>
+      <button class="toggleButton" data-description="4">0-4 cm</button>
+      <button class="toggleButton" data-description="5">0-5 cm</button>
+      <button class="toggleButton" data-description="6">0-6 cm</button>
+      <button class="toggleButton" data-description="7">0-7 cm</button>
+    </div>
+    </div>
+
+    
+  <div id="draggable-icon" draggable="true">🛠</div>
+  <div id="popup-container">
+    <div class="buttonCenti">
+      Sort by Centimeters:
+      <button class="toggleButton" data-description="1">0-1 cm</button>
+      <button class="toggleButton" data-description="2">0-2 cm</button>
+      <button class="toggleButton" data-description="3">0-3 cm</button>
+      <button class="toggleButton" data-description="4">0-4 cm</button>
+      <button class="toggleButton" data-description="5">0-5 cm</button>
+      <button class="toggleButton" data-description="6">0-6 cm</button>
+      <button class="toggleButton" data-description="7">0-7 cm</button>
+    </div>
+    <button id="start-measurement">Start Measurement</button>
+    <button id="downloadGeoJSONButton">Download GeoJSON</button>
+  </div>
+</main>
+
+<!-- Third Party Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turf.js/7.2.0/turf.min.js"></script>
+
+<!-- Custom Scripts -->
+<script src="script.js"></script>
+
+<div id="gradient-image">
+  <div class="gradient-box">
+    <span class="color-text">Blue (0)</span>
+    <span class="color-text">Green (3.5)</span>
+    <span class="color-text">Red (7)</span>
+  </div>
+</div>
+
+<style>
+  /* Gradient Image Styles */
+  #gradient-image {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .gradient-box {
+    width: 30px;
+    height: 200px;
+    background: linear-gradient(to bottom, #0000FF 0%, #00FF00 50%, #FF0000 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+  
+  }
+
+  .color-text {
+    text-align: left; /* Align text to the left */
+    margin-left: 5px; /* Adjust margin as needed */
+    font-size: 14px; /* Adjust the font size as needed */
+    color: white
+  }
+
+</style>
+
+<script>
+  mapboxgl.accessToken = 'pk.eyJ1Ijoia296dXhvIiwiYSI6ImNsZ3lrdXp3YjAzNnMzbm1qYzMxdnlmajcifQ.jhnwh-sNdrpsMoImIgzbFQ';
+  var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [120.673645, 23.147736],
+    zoom: 6.5,
+    preserveDrawingBuffer: true
+  });
+
+  const layerList = document.getElementById('menu');
+  const inputs = layerList.getElementsByTagName('input');
+
+  for (const input of inputs) {
+    input.onclick = (layer) => {
+      const layerId = layer.target.id;
+      map.setStyle('mapbox://styles/mapbox/' + layerId);
+    };
+  }
+
+  var geojsonFiles = [
+  'http://localhost:2999/geojson',
+  'http://localhost:2998/geojson',
+  'http://localhost:2997/geojson',
+  'http://localhost:2996/geojson',
+  'http://localhost:2995/geojson',
+  'http://localhost:2994/geojson'
+  
+  ];
+
+  var currentGeoJSONIndex = 0;
+  var popup;
+
+  function loadGeoJSON() {
+    map.getSource('my-data').setData(geojsonFiles[currentGeoJSONIndex]);
+  }
+
+  function addGeoJSONSourceAndLayer() {
+  map.addSource('my-data', {
+    type: 'geojson',
+    data: geojsonFiles[currentGeoJSONIndex]
+  });
+
+  // Compare start
+  var isShowingBoth = false;
+  
+  document.getElementById('button6').addEventListener('click', function () {
+  if (isShowingBoth) {
+    
+    map.removeLayer('my-layer-2');
+    map.removeSource('my-data-2');
+    isShowingBoth = false;
+  } else {
+    
+    map.addSource('my-data-2', {
+      type: 'geojson',
+      data: geojsonFiles[0]
+    });
+
+    map.addLayer({
+    id: 'my-layer-2',
+    type: 'line',
+    source: 'my-data-2',
+    paint: {
+      'line-color': [
+        'interpolate',
+        ['linear'],
+        ['get', 'description'], 
+        0, '#0000FF',  // blue
+        3.5, '#00FF00',  // green
+        7, '#FF0000'   // red
+      ],
+      'line-opacity': 0.8,
+      'line-width': 4
+    }
+  });
+
+    isShowingBoth = true;
+  }
+});
+
+document.getElementById('button7').addEventListener('click', function () {
+  if (isShowingBoth) {
+    
+    map.removeLayer('my-layer-2');
+    map.removeSource('my-data-2');
+    isShowingBoth = false;
+  } else {
+    
+    map.addSource('my-data-2', {
+      type: 'geojson',
+      data: geojsonFiles[1]
+    });
+
+    map.addLayer({
+    id: 'my-layer-2',
+    type: 'line',
+    source: 'my-data-2',
+    paint: {
+      'line-color': [
+        'interpolate',
+        ['linear'],
+        ['get', 'description'], 
+        0, '#0000FF',  // blue
+        3.5, '#00FF00',  // green
+        7, '#FF0000'   // red
+      ],
+      'line-opacity': 0.8,
+      'line-width': 4
+    }
+  });
+
+    isShowingBoth = true;
+  }
+});
+document.getElementById('button8').addEventListener('click', function () {
+  if (isShowingBoth) {
+    
+    map.removeLayer('my-layer-2');
+    map.removeSource('my-data-2');
+    isShowingBoth = false;
+  } else {
+    
+    map.addSource('my-data-2', {
+      type: 'geojson',
+      data: geojsonFiles[2]
+    });
+
+    map.addLayer({
+    id: 'my-layer-2',
+    type: 'line',
+    source: 'my-data-2',
+    paint: {
+      'line-color': [
+        'interpolate',
+        ['linear'],
+        ['get', 'description'], 
+        0, '#0000FF',  // blue
+        3.5, '#00FF00',  // green
+        7, '#FF0000'   // red
+      ],
+      'line-opacity': 0.8,
+      'line-width': 4
+    }
+  });
+
+    isShowingBoth = true;
+  }
+});
+document.getElementById('button9').addEventListener('click', function () {
+  if (isShowingBoth) {
+    
+    map.removeLayer('my-layer-2');
+    map.removeSource('my-data-2');
+    isShowingBoth = false;
+  } else {
+    
+    map.addSource('my-data-2', {
+      type: 'geojson',
+      data: geojsonFiles[3]
+    });
+
+    map.addLayer({
+    id: 'my-layer-2',
+    type: 'line',
+    source: 'my-data-2',
+    paint: {
+      'line-color': [
+        'interpolate',
+        ['linear'],
+        ['get', 'description'], 
+        0, '#0000FF',  // blue
+        3.5, '#00FF00',  // green
+        7, '#FF0000'   // red
+      ],
+      'line-opacity': 0.8,
+      'line-width': 4
+    }
+  });
+
+    isShowingBoth = true;
+  }
+});
+
+  map.addLayer({
+    id: 'my-layer',
+    type: 'line',
+    source: 'my-data',
+    paint: {
+      'line-color': [
+        'interpolate',
+        ['linear'],
+        ['get', 'description'], 
+        0, '#0000FF',  // blue
+        3.5, '#00FF00',  // green
+        7, '#FF0000'   // red
+      ],
+      'line-opacity': 0.8,
+      'line-width': 4
+    }
+  });
+}
+
+  map.on('style.load', function () {
+    addGeoJSONSourceAndLayer();
+  });
+
+  map.on('mouseenter', 'my-layer', function (e) {
+    var coordinates = e.lngLat;
+    var properties = e.features[0].properties;
+    var description = properties.description;
+    var name = properties.name;
+    var distance = properties.distance;
+    var city = properties.city;
+
+    var popupHTML =
+      "<div><strong>FID:</strong> " + name + "</div>" +
+      "<div><strong>City:</strong> " + city + "</div>" +
+      "<div><strong>Land subsidence (下陷量):</strong> " + description + "cm" + "</div>" +
+      "<div><strong>Total Distance:</strong> " + distance + "</div>";
+
+    popup = new mapboxgl.Popup()
+      .setLngLat(coordinates)
+      .setHTML(popupHTML)
+      .addTo(map);
+  });
+
+  map.on('mouseleave', 'my-layer', function () {
+    map.getCanvas().style.cursor = '';
+    popup.remove();
+  });
+
+  map.on('mouseenter', 'my-layer-2', function (e) {
+    var coordinates = e.lngLat;
+    var properties = e.features[0].properties;
+    var description = properties.description;
+    var name = properties.name;
+    var distance = properties.distance;
+    var city = properties.city;
+
+    var popupHTML =
+      "<div><strong>FID:</strong> " + name + "</div>" +
+      "<div><strong>City:</strong> " + city + "</div>" +
+      "<div><strong>Land subsidence (下陷量):</strong> " + description + "cm" + "</div>" +
+      "<div><strong>Total Distance:</strong> " + distance + "</div>";
+
+    popup = new mapboxgl.Popup()
+      .setLngLat(coordinates)
+      .setHTML(popupHTML)
+      .addTo(map);
+  });
+
+  map.on('mouseleave', 'my-layer-2', function () {
+    map.getCanvas().style.cursor = '';
+    popup.remove();
+  });
+
+  document.getElementById('button1').addEventListener('click', function () {
+    currentGeoJSONIndex = 0;
+    loadGeoJSON();
+  });
+
+  document.getElementById('button2').addEventListener('click', function () {
+    currentGeoJSONIndex = 1;
+    loadGeoJSON();
+  });
+
+  document.getElementById('button3').addEventListener('click', function () {
+    currentGeoJSONIndex = 2;
+    loadGeoJSON();
+  });
+
+  document.getElementById('button4').addEventListener('click', function () {
+    currentGeoJSONIndex = 3;
+    loadGeoJSON();
+  });
+  
+  document.getElementById('button5').addEventListener('click', function () {
+    currentGeoJSONIndex = 4;
+    loadGeoJSON();
+  });
+
+  var buttons = document.querySelectorAll('.toggleButton');
+
+for (var i = 0; i < buttons.length; i++) {
+  buttons[i].addEventListener('click', function () {
+    var description = parseFloat(this.getAttribute('data-description'));
+
+    map.setFilter('my-layer', ['<=', ['get', 'description'], description]);
+  });
+}
+
+      // Add hover effect
+      map.on('mousemove', 'tileset-layer', function (e) {
+     map.getCanvas().style.cursor = 'pointer';
+
+      // Highlight the hovered feature
+      map.setFeatureState(
+      { source: 'kozuxo.clhirj0t90fgt2bludx23iacp-7ehke', id: e.features[0].id },
+      { hover: true }
+    );
+  });
+
+  // Reset hover effect when the mouse leaves the layer
+  map.on('mouseleave', 'tileset-layer', function () {
+    map.getCanvas().style.cursor = '';
+
+    // Reset the feature state
+    map.setFeatureState(
+      { source: 'kozuxo.clhirj0t90fgt2bludx23iacp-7ehke', id: null },
+      { hover: false }
+    );
+  });
+
+     // Capture screenshot
+     document.getElementById('captureButton').addEventListener('click', function() {
+    // Get the dimensions and position of the map container
+    var mapContainer = document.getElementById('map-container');
+    var rect = mapContainer.getBoundingClientRect();
+
+    // Capture the map container using html2canvas with specified dimensions
+    html2canvas(mapContainer, {
+        width: rect.width,
+        height: rect.height,
+        x: rect.left,
+        y: rect.top
+    }).then(function(canvas) {
+        // Convert canvas to an image URL
+        var imgURL = canvas.toDataURL('image/png');
+
+        // Create a link element to download the image
+        var link = document.createElement('a');
+        link.href = imgURL;
+        link.download = 'map_screenshot.png';
+        link.click();
+    });
+});
+
+document.getElementById('captureButton2').addEventListener('click', function() {
+    // Get the dimensions and position of the map container
+    var mapContainer = document.getElementById('map-container');
+    var rect = mapContainer.getBoundingClientRect();
+    
+
+    // Create a PDF using html2pdf
+    var pdfOptions = {
+        margin: 10,
+        filename: 'map_screenshot.pdf',
+        image: { type: 'png', quality: 1 },
+        html2canvas: { scale: 1 }
+    };
+
+    html2pdf().from(mapContainer).set(pdfOptions).save();
+});
+
+//MRT GEOJSON
+function loadNewGeoJSON() {
+    
+    if (map.getLayer('my-layer-new')) {
+        map.removeLayer('my-layer-new');
+    }
+
+    if (map.getSource('my-data-new')) {
+        map.removeSource('my-data-new');
+    }
+
+    map.addSource('my-data-new', {
+        'type': 'geojson',
+        'data': geojsonFiles[currentGeoJSONIndex]
+    });
+
+    map.addLayer({
+        'id': 'my-layer-new',
+        'type': 'circle', // Change to 'circle' for Point features
+        'source': 'my-data-new',
+        'paint': {
+            'circle-color': '#000', // Adjust color as needed
+            'circle-radius': 6
+        }
+    });
+
+    map.on('mouseenter', 'my-layer-new', function (e) {
+        var coordinates = e.lngLat;
+        var properties = e.features[0].properties;
+
+        var popupHTML =
+            "<div><strong>ID:</strong> " + properties.id + "</div>" +
+         
+            "<div><strong>Time Series:</strong> " + properties.time_series + "</div>" +
+            "<div><strong>h(m):</strong> " + properties['h(m)'] + "</div>" +
+            "<div><strong>Time:</strong> " + properties.time + "</div>";
+
+        if (popup) {
+            popup.remove();
+        }
+
+        popup = new mapboxgl.Popup()
+            .setLngLat(coordinates)
+            .setHTML(popupHTML)
+            .addTo(map);
+    });
+
+    map.on('mouseleave', 'my-layer-new', function () {
+        map.getCanvas().style.cursor = '';
+
+        if (popup) {
+            popup.remove();
+        }
+    });
+}
+
+document.getElementById('buttonNewGeoJSON').addEventListener('click', function () {
+    
+    currentGeoJSONIndex = 5; 
+    loadNewGeoJSON();
+});
+
+</script>
+
+<script>
+  
+var draggableIcon = document.getElementById('draggable-icon');
+    var popupContainer = document.getElementById('popup-container');
+  
+    // Set initial positions
+    const initialIconPosition = {
+      left: window.innerWidth - draggableIcon.offsetWidth - 10,
+      top: window.innerHeight - draggableIcon.offsetHeight - 100
+    };
+  
+    draggableIcon.style.left = initialIconPosition.left + 'px';
+    draggableIcon.style.top = initialIconPosition.top + 'px';
+  
+    draggableIcon.addEventListener('dragstart', function (event) {
+      event.dataTransfer.setData('text/plain', '');
+    });
+  
+    document.addEventListener('dragover', function (event) {
+      event.preventDefault();
+    });
+  
+    document.addEventListener('drop', function (event) {
+      event.preventDefault();
+      var mouseX = event.clientX;
+      var mouseY = event.clientY;
+  
+      draggableIcon.style.left = mouseX - draggableIcon.clientWidth / 2 + 'px';
+      draggableIcon.style.top = mouseY - draggableIcon.clientHeight / 2 + 'px';
+  
+      hidePopup();
+    });
+  
+    function togglePopup() {
+      if (popupContainer.style.display === 'block') {
+        hidePopup();
+      } else {
+        showPopup();
+      }
+    }
+  
+    function showPopup() {
+      var iconRect = draggableIcon.getBoundingClientRect();
+      popupContainer.style.left = iconRect.left + 'px';
+      popupContainer.style.top = iconRect.bottom + 'px';
+      popupContainer.style.display = 'block';
+    }
+  
+    function hidePopup() {
+      popupContainer.style.display = 'none';
+    }
+  
+    // Add a separate event listener for the button click
+    document.getElementById('draggable-icon').addEventListener('click', function (event) {
+      if (event.target.tagName === 'BUTTON') {
+        // Handle button click here
+        console.log('Button clicked:', event.target.textContent);
+      } else {
+        togglePopup();
+      }
+    });
+</script>
+
+</body>
+</html>
